@@ -1,1 +1,22 @@
-.env 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+
+# Virtual Environment
+venv/
+ENV/
+
+# Temporary files
+temp/
+*.mp3
+*.wav
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
