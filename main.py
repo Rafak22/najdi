@@ -47,11 +47,8 @@ async def root():
     }
 
 @app.get("/health")
-async def health_check():
-    """
-    يتحقق من حالة الخدمة
-    """
-    return {"status": "OK"}
+def health_check():
+    return {"status": "ok"}
 
 @app.post("/chat")
 async def chat_endpoint(request: Request):
