@@ -4,17 +4,24 @@ import base64
 import os
 import logging
 
-# Load environment variables from .env file
-load_dotenv()
-
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+try:
+    # Try to load from .env file first (for local development)
+    load_dotenv()
+except Exception as e:
+    logger.warning(f"Could not load .env file: {e}")
+
 # Get API key from environment variable
-openai_key = os.getenv("OPENAI_API_KEY")
+openai_key = os.environ.get("OPENAI_API_KEY")
 if not openai_key:
-    raise ValueError("OPENAI_API_KEY not found in environment variables. Please check your .env file.")
+    logger.error("OPENAI_API_KEY not found in environment variables")
+    raise ValueError(
+        "OPENAI_API_KEY not found. Please set it in Railway environment variables "
+        "or in .env file for local development"
+    )
 
 # Initialize OpenAI client with API key from environment
 client = OpenAI(api_key=openai_key)

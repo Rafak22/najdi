@@ -2,16 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from server import generate_response
-from dotenv import load_dotenv
 import logging
 import os
-
-# Load environment variables
-load_dotenv()
-
-# Verify OpenAI API key is present
-if not os.getenv("OPENAI_API_KEY"):
-    raise ValueError("OPENAI_API_KEY not found in environment variables. Please check your .env file.")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -51,7 +43,13 @@ async def chat_endpoint(request: ChatRequest):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "message": "نكستا الخليجي جاهز لخدمتك 💚"}
+    return {
+        "status": "healthy",
+        "message": "نكستا الخليجي جاهز لخدمتك 💚",
+        "environment": {
+            "OPENAI_API_KEY": "✓ موجود" if os.environ.get("OPENAI_API_KEY") else "✗ غير موجود"
+        }
+    }
 
 if __name__ == "__main__":
     import uvicorn
