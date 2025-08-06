@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import base64
 import os
 import logging
-import json
+import whisper
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +26,9 @@ if not openai_key:
 
 # Initialize OpenAI client with API key from environment
 client = OpenAI(api_key=openai_key)
+
+# Load Whisper model for voice transcription
+whisper_model = whisper.load_model("base")
 
 # System prompt for Khaleeji dialect
 SAUDI_PROMPT = """
@@ -85,3 +88,32 @@ async def generate_response(message: str):
     except Exception as e:
         logger.error(f"Error generating response: {str(e)}")
         raise Exception(f"Error generating response: {str(e)}")
+
+async def process_voice_message(audio_file_path: str):
+    """
+    Process a voice message: transcribe it, generate a response, and convert response to speech.
+    
+    Args:
+        audio_file_path (str): Path to the audio file
+        
+    Returns:
+        dict: A dictionary containing the transcript, reply text, and reply audio
+    """
+    try:
+        # Transcribe audio using Whisper
+        result = whisper_model.transcribe(audio_file_path)
+        transcript = result["text"]
+        logger.info(f"Transcribed text: {transcript}")
+
+        # Generate response
+        response = await generate_response(transcript)
+        
+        return {
+            "transcript": transcript,
+            "reply_text": response["text"],
+            "reply_audio": response["audio_base64"]
+        }
+
+    except Exception as e:
+        logger.error(f"Error processing voice message: {str(e)}")
+        raise Exception(f"Error processing voice message: {str(e)}")

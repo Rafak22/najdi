@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -32,19 +31,12 @@ ENV/
 *.swo
 
 # Project specific
-temp/
-temp_*.mp3
-temp_*.wav
+.env
 *.mp3
 *.wav
-
-# Git
-.git
+temp_*
+.git/
 .gitignore
-
-# Logs
-*.log
-
-# Environment variables
-.env
-.env.*
+README.md
+Dockerfile
+.dockerignore
