@@ -1,10 +1,9 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from server import generate_response, process_voice_message
+from server import generate_response
 import logging
 import os
-import aiofiles
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -29,6 +28,14 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     message: str
 
+@app.get("/")
+async def root():
+    return {"status": "OK", "message": "نكستا الخليجي API"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "OK"}
+
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
@@ -50,18 +57,11 @@ async def handle_voice(file: UploadFile = File(...)):
         temp_path = os.path.join("temp", "temp_audio.wav")
         
         # Save uploaded file
-        async with aiofiles.open(temp_path, 'wb') as out_file:
-            content = await file.read()
-            await out_file.write(content)
+        content = await file.read()
+        with open(temp_path, "wb") as f:
+            f.write(content)
         
-        # Process voice message
-        result = await process_voice_message(temp_path)
-        
-        return {
-            "transcript": result["transcript"],
-            "reply_text": result["reply_text"],
-            "reply_audio": result["reply_audio"]
-        }
+        return {"message": "Received voice file", "filename": file.filename}
         
     except Exception as e:
         logger.error(f"Error processing voice: {str(e)}")
@@ -74,16 +74,13 @@ async def handle_voice(file: UploadFile = File(...)):
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "message": "نكستا الخليجي جاهز لخدمتك 💚",
-        "environment": {
-            "OPENAI_API_KEY": "✓ موجود" if os.environ.get("OPENAI_API_KEY") else "✗ غير موجود"
-        }
-    }
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=port,
+        reload=False,  # Disable reload in production
+        workers=1  # Use single worker for simplicity
+    )

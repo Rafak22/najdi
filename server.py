@@ -1,6 +1,5 @@
 from openai import OpenAI
 from dotenv import load_dotenv
-import whisper
 import base64
 import os
 import logging
@@ -28,12 +27,9 @@ if not openai_key:
 # Initialize OpenAI client with API key from environment
 client = OpenAI(api_key=openai_key)
 
-# Initialize Whisper model
-whisper_model = whisper.load_model("base")
-
 # System prompt for Khaleeji dialect
 SAUDI_PROMPT = """
-أنت نكستا الخليجي، مساعد ذكي يتحدث حصريًا باللهجة الخليجية. جميع إجاباتك، بدون استثناء، لازم تكون باللهجة الخليجية فقط.
+أنت نيكستا الخليجي، مساعد ذكي يتحدث حصريًا باللهجة الخليجية. جميع إجاباتك، بدون استثناء، لازم تكون باللهجة الخليجية فقط.
 
 مهامك الأساسية:
 1- الرد على الأسئلة والمحادثات: جاوب دومًا باللهجة الخليجية. لا تستخدم الفصحى أو لهجات غير خليجية.
@@ -42,20 +38,15 @@ SAUDI_PROMPT = """
 4- أضف لمسة ودية وأحيانًا نكهات محلية (مثل: يبه، حبيبي، هلا وغلا، الخ).
 """
 
-async def transcribe_audio(audio_path: str) -> str:
-    """
-    Transcribe audio file using Whisper
-    """
-    try:
-        result = whisper_model.transcribe(audio_path)
-        return result["text"]
-    except Exception as e:
-        logger.error(f"Error transcribing audio: {str(e)}")
-        raise Exception("Failed to transcribe audio")
-
 async def generate_response(message: str):
     """
     Generate a response using OpenAI's GPT-4 and convert it to speech.
+    
+    Args:
+        message (str): The user's input message
+        
+    Returns:
+        dict: A dictionary containing the generated text and audio in base64 format
     """
     try:
         # Prepare messages for chat
@@ -94,25 +85,3 @@ async def generate_response(message: str):
     except Exception as e:
         logger.error(f"Error generating response: {str(e)}")
         raise Exception(f"Error generating response: {str(e)}")
-
-async def process_voice_message(audio_path: str):
-    """
-    Process voice message: transcribe, generate response, and create audio reply
-    """
-    try:
-        # Step 1: Transcribe audio to text
-        transcript = await transcribe_audio(audio_path)
-        logger.info(f"Transcribed text: {transcript}")
-
-        # Step 2: Generate response
-        response = await generate_response(transcript)
-        
-        return {
-            "transcript": transcript,
-            "reply_text": response["text"],
-            "reply_audio": response["audio_base64"]
-        }
-
-    except Exception as e:
-        logger.error(f"Error processing voice message: {str(e)}")
-        raise Exception("Failed to process voice message")
