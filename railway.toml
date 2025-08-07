@@ -6,10 +6,4 @@ startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 5
-
-[deploy.healthcheck]
-interval = "30s"
-timeout = "10s"
-retries = 5
-startPeriod = "40s"
+restartPolicyMaxRetries = 10
