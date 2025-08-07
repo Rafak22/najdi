@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware  # ✅ add this
 from server import generate_response, process_voice_message
 import logging
 import os
@@ -21,6 +22,17 @@ app = FastAPI(
     title="Nexsta Khaleeji Voice API",
     description="API لمساعد ذكي يتحدث باللهجة الخليجية ويدعم الإدخال النصي والصوتي.",
     version="1.0.0",
+)
+
+# ✅ Allow only trusted hosts (including healthcheck.railway.app)
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=[
+        "localhost",
+        "127.0.0.1",
+        "*.railway.app",
+        "healthcheck.railway.app"
+    ]
 )
 
 # Allow frontend access
