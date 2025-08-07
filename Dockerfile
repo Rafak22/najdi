@@ -1,24 +1,14 @@
-# استخدام نسخة خفيفة من Python
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# تثبيت المكتبات الضرورية فقط
-RUN apt-get update && \
-    apt-get install -y ffmpeg libsndfile1 && \
-    rm -rf /var/lib/apt/lists/*
+# Install ffmpeg for audio processing
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
-# تحديد مجلد العمل
-WORKDIR /app
-
-# نسخ الملفات الأساسية فقط
-COPY main.py .
-COPY server.py .
-COPY model.py .
+# Only install needed dependencies
 COPY requirements.txt .
-COPY .env .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# تثبيت المتطلبات
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Copy only necessary files
+COPY . .
 
-# تشغيل التطبيق واستخدام منفذ بيئة التشغيل
+# Run the application
 CMD ["uvicorn", "main:app, "--host", "0.0.0.0", "--port", "8000", "--log-level", "debug"]
