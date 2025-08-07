@@ -1,14 +1,18 @@
-FROM python:3.11-slim
+# استخدم نسخة بايثون خفيفة
+FROM python:3.10-slim
 
-# Install ffmpeg for audio processing
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+# تثبيت بعض الأدوات الأساسية اللي slim ما تحتويها
+RUN apt-get update && apt-get install -y gcc ffmpeg libsndfile1 && rm -rf /var/lib/apt/lists/*
 
-# Only install needed dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# إعداد مجلد العمل
+WORKDIR /app
 
-# Copy only necessary files
+# نسخ ملفات المشروع
 COPY . .
 
-# Run the application
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port=${PORT:-8000}"]
+# تثبيت المتطلبات
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# تشغيل الخادم
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
