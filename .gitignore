@@ -1,57 +1,22 @@
-# Python bytecode
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
 *.so
-
-# Audio files (to reduce repo size and avoid pushing training/test audio)
-*.mp3
-*.wav
-*.ogg
-*.m4a
-*.flac
-
-# Logs and temp files
-*.log
-*.tmp
-temp_*/
-logs/
-
-# Environment and virtualenv
 .env
-.venv/
+
+# Virtual Environment
 venv/
 ENV/
-Pipfile.lock
 
-# Jupyter and notebook checkpoints (if any)
-.ipynb_checkpoints/
-*.ipynb
+# Temporary files
+temp/
+*.mp3
+*.wav
 
-# IDE and editor files
-.vscode/
+# IDE
 .idea/
-*.swp
-*.swo
+.vscode/
 
-# Version control
-.git/
-.gitattributes
-
-# Output folders
-node_modules/
-dist/
-build/
-*.egg-info/
-*.egg
-__results__/
-output/
-outputs/
-
-# Docker
-Dockerfile.dev
-.dockerignore
-docker-compose*.yml
-
-# System
-.DS_Store
-Thumbs.db
+# Logs
+*.log
