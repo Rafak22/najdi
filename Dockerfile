@@ -1,14 +1,19 @@
-# استخدم نسخة بايثون خفيفة
+# استخدام نسخة بايثون خفيفة
 FROM python:3.10-slim
 
-# تثبيت بعض الأدوات الأساسية اللي slim ما تحتويها
-RUN apt-get update && apt-get install -y gcc ffmpeg libsndfile1 && rm -rf /var/lib/apt/lists/*
+# تثبيت الأدوات الضرورية فقط (بدون gcc)
+RUN apt-get update && \
+    apt-get install -y ffmpeg libsndfile1 && \
+    rm -rf /var/lib/apt/lists/*
 
-# إعداد مجلد العمل
+# مجلد العمل
 WORKDIR /app
 
-# نسخ ملفات المشروع
-COPY . .
+# نسخ الملفات المهمة فقط (تجنب نسخ كل المشروع)
+COPY main.py .
+COPY server.py .
+COPY model.py .
+COPY requirements.txt .
 
 # تثبيت المتطلبات
 RUN pip install --no-cache-dir --upgrade pip && \
