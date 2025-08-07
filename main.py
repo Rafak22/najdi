@@ -119,14 +119,5 @@ async def handle_voice(file: UploadFile = File(...)):
             os.remove("temp_voice.wav")
         raise HTTPException(status_code=500, detail=str(e))
 
-# ✅ Entry point with 5-second delay for Railway
-if __name__ == "__main__":
-    import uvicorn
-    import time
 
-    logger.info("🚀 Starting app from __main__")
-    logger.info("⏳ Waiting 5 seconds before starting to ensure readiness...")
-    time.sleep(5)
 
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
