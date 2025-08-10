@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware  # ✅ add this
-from modeln import generate_response, process_voice_message
+from modeln import generate_response, process_voice_message, synthesize_speech_edge
 import logging
 import os
 import io
@@ -125,3 +125,17 @@ async def handle_voice(file: UploadFile = File(...)):
 
 
 
+# 🔊 Direct TTS endpoint (edge-tts) — streams MP3
+@app.post("/tts")
+async def tts_endpoint(request: Request):
+    try:
+        data = await request.json()
+        text = (data or {}).get("text") if isinstance(data, dict) else None
+        if not text or not str(text).strip():
+            return {"error": "text is required"}
+
+        audio_bytes = await synthesize_speech_edge(str(text))
+        return StreamingResponse(io.BytesIO(audio_bytes), media_type="audio/mpeg")
+    except Exception as e:
+        logger.error(f"❌ Error in /tts: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
