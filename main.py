@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware  # ✅ add this
 from modeln import generate_response, process_voice_message
 import logging
 import os
+import io
 from dotenv import load_dotenv
 
 # Setup logging
@@ -82,7 +84,7 @@ async def health_check():
         "note": "No DB check required"
     }
 
-# 📨 Text chat endpoint
+# 📨 Text chat endpoint - returns MP3 audio stream
 @app.post("/chat")
 async def chat_endpoint(request: Request):
     try:
@@ -92,13 +94,14 @@ async def chat_endpoint(request: Request):
             raise HTTPException(status_code=400, detail="الرجاء إدخال نص الرسالة")
 
         logger.info(f"📩 Received text message: {message}")
-        response = await generate_response(message)
-        return response
+        result = await generate_response(message)
+        audio_bytes = result["audio_bytes"]
+        return StreamingResponse(io.BytesIO(audio_bytes), media_type="audio/mpeg")
     except Exception as e:
         logger.error(f"❌ Error in /chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# 🎙️ Voice input endpoint
+# 🎙️ Voice input endpoint - returns MP3 audio stream
 @app.post("/voice")
 async def handle_voice(file: UploadFile = File(...)):
     try:
@@ -109,9 +112,10 @@ async def handle_voice(file: UploadFile = File(...)):
 
         logger.info(f"🎙️ Received voice file: {file.filename}")
         result = await process_voice_message(temp_path)
+        audio_bytes = result["reply_audio"]
 
         os.remove(temp_path)
-        return result
+        return StreamingResponse(io.BytesIO(audio_bytes), media_type="audio/mpeg")
 
     except Exception as e:
         logger.error(f"❌ Error in /voice: {str(e)}")
