@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware  # ✅ add this
-from server import generate_response, process_voice_message
+from modeln import generate_response, process_voice_message
 import logging
 import os
 from dotenv import load_dotenv
