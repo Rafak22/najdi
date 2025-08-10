@@ -44,7 +44,7 @@ async def synthesize_speech_edge(
     *,
     voice_name: str = "ar-SA-HamedNeural",
     rate: str = "+0%",
-    pitch: str = "+0%",
+    pitch: str = "+0Hz",
 ) -> bytes:
     """
     Convert text to speech using edge-tts (no API key) and return MP3 bytes.
