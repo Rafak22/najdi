@@ -72,6 +72,12 @@ async def generate_response(message: str):
         )
 
         generated_text = response.choices[0].message.content
+        # Remove the <END> marker from the final output before returning it
+        # We keep <END> in the system prompt so the model knows when to stop,
+        # but we strip it out here so it doesn't appear in the chat.
+        if "<END>" in generated_text:
+            generated_text = generated_text.split("<END>")[0].strip()
+
         logger.info(f"Generated response text: {generated_text}")
         return generated_text
 
