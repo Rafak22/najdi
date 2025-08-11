@@ -2,6 +2,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import logging
+import re
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -46,6 +47,14 @@ SAUDI_PROMPT = """
 
 """
 
+def _trim_to_last_sentence(text: str) -> str:
+    """
+    Trim the text to the last complete sentence.
+    Avoids returning incomplete words if model cuts off.
+    """
+    match = re.search(r'(.+[\.\!\؟\!؟؛…])[^\.\!\؟\!؟؛…]*$', text, flags=re.S)
+    return match.group(1).strip() if match else text.strip()
+
 async def generate_response(message: str):
     """
     Generate a response using OpenAI's GPT-4.
@@ -77,6 +86,9 @@ async def generate_response(message: str):
         # but we strip it out here so it doesn't appear in the chat.
         if "<END>" in generated_text:
             generated_text = generated_text.split("<END>")[0].strip()
+        
+        # Ensure we return only complete sentences if the model cut off
+        generated_text = _trim_to_last_sentence(generated_text)
 
         logger.info(f"Generated response text: {generated_text}")
         return generated_text
