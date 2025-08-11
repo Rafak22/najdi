@@ -1,11 +1,8 @@
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware  # ✅ add this
-from modeln import generate_response, process_voice_message, synthesize_speech_edge
+from modeln import generate_response
 import logging
-import os
-import io
 from dotenv import load_dotenv
 
 # Setup logging
@@ -21,8 +18,8 @@ except Exception as e:
 
 # Initialize FastAPI
 app = FastAPI(
-    title="Nexsta Khaleeji Voice API",
-    description="API لمساعد ذكي يتحدث باللهجة الخليجية ويدعم الإدخال النصي والصوتي.",
+    title="Nexsta Khaleeji Chat API",
+    description="API لمساعد ذكي يتحدث باللهجة الخليجية ويدعم المحادثة النصية فقط.",
     version="1.0.0",
 )
 
@@ -62,8 +59,7 @@ async def root():
         "message": "🚀 Nexsta Khaleeji Voice API is up and running!",
         "version": "1.0.0",
         "endpoints": {
-            "/chat": "للمحادثة النصية",
-            "/voice": "لمعالجة المدخلات الصوتية",
+            "/chat": "للمحادثة النصية (نص فقط)",
             "/health": "للتحقق من حالة الخدمة",
             "/ping": "فحص سريع للتأكد من التشغيل"
         }
@@ -84,7 +80,7 @@ async def health_check():
         "note": "No DB check required"
     }
 
-# 📨 Text chat endpoint - returns MP3 audio stream
+# 📨 Text chat endpoint - returns JSON text only
 @app.post("/chat")
 async def chat_endpoint(request: Request):
     try:
@@ -94,48 +90,10 @@ async def chat_endpoint(request: Request):
             raise HTTPException(status_code=400, detail="الرجاء إدخال نص الرسالة")
 
         logger.info(f"📩 Received text message: {message}")
-        result = await generate_response(message)
-        audio_bytes = result["audio_bytes"]
-        return StreamingResponse(io.BytesIO(audio_bytes), media_type="audio/mpeg")
+        reply_text = await generate_response(message)
+        return {"text": reply_text}
     except Exception as e:
         logger.error(f"❌ Error in /chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# 🎙️ Voice input endpoint - returns MP3 audio stream
-@app.post("/voice")
-async def handle_voice(file: UploadFile = File(...)):
-    try:
-        temp_path = "temp_voice.wav"
-        with open(temp_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
-
-        logger.info(f"🎙️ Received voice file: {file.filename}")
-        result = await process_voice_message(temp_path)
-        audio_bytes = result["reply_audio"]
-
-        os.remove(temp_path)
-        return StreamingResponse(io.BytesIO(audio_bytes), media_type="audio/mpeg")
-
-    except Exception as e:
-        logger.error(f"❌ Error in /voice: {str(e)}")
-        if os.path.exists("temp_voice.wav"):
-            os.remove("temp_voice.wav")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-
-# 🔊 Direct TTS endpoint (edge-tts) — streams MP3
-@app.post("/tts")
-async def tts_endpoint(request: Request):
-    try:
-        data = await request.json()
-        text = (data or {}).get("text") if isinstance(data, dict) else None
-        if not text or not str(text).strip():
-            return {"error": "text is required"}
-
-        audio_bytes = await synthesize_speech_edge(str(text))
-        return StreamingResponse(io.BytesIO(audio_bytes), media_type="audio/mpeg")
-    except Exception as e:
-        logger.error(f"❌ Error in /tts: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+# Removed voice and TTS endpoints to keep the service text-only
