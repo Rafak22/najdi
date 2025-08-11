@@ -42,8 +42,6 @@ SAUDI_PROMPT = """
 7- عند الشرح أو إعطاء أمثلة، استخدم أسلوب يخلط بين الطرافة والعفوية بدون فقدان وضوح المعنى.
 8- حافظ على استمرارية النبرة النجدية في جميع الردود، وتجنب إدخال أي مفردة فصحى أو لهجة أخرى إلا إذا كانت جزء من شرح لمعناها النجدي.
 
-القيود:
-- لا يتجاوز طول الرد 300 توكن.
 """
 
 async def generate_response(message: str):
@@ -68,7 +66,7 @@ async def generate_response(message: str):
             model="gpt-4",
             messages=messages,
             temperature=0.7,
-            max_tokens=300,
+            max_tokens=400,
         )
 
         generated_text = response.choices[0].message.content
